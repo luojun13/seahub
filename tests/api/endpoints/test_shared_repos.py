@@ -9,6 +9,9 @@ from seaserv import seafile_api
 from seahub.profile.models import Profile
 from seahub.test_utils import BaseTestCase, TRAVIS
 from tests.common.utils import randstring
+from mock import patch
+from seahub.role_permissions.settings import DEFAULT_ENABLED_ROLE_PERMISSIONS
+from tests.api.test_public_repo import TEST_ADD_PUBLIC_ENABLED_ROLE_PERMISSIONS
 
 
 class SharedReposTest(BaseTestCase):
@@ -219,6 +222,7 @@ class SharedReposTest(BaseTestCase):
         target_repo = [repo for repo in repos if repo.repo_id == self.org_repo.id]
         assert target_repo[0].permission == 'r'
 
+    @patch('seahub.role_permissions.utils.ENABLED_ROLE_PERMISSIONS', TEST_ADD_PUBLIC_ENABLED_ROLE_PERMISSIONS)
     def test_can_update_public_share_perm(self):
         for r in seaserv.seafserv_threaded_rpc.list_inner_pub_repos():
             seafile_api.remove_inner_pub_repo(r.repo_id)
@@ -238,6 +242,15 @@ class SharedReposTest(BaseTestCase):
 
         repos = seafile_api.list_inner_pub_repos_by_owner(self.user_name)
         assert repos[0].permission == 'r'
+
+    @patch('seahub.role_permissions.utils.ENABLED_ROLE_PERMISSIONS', DEFAULT_ENABLED_ROLE_PERMISSIONS)
+    def test_can_not_update_public_share_perm_when_add_public_disabled(self):
+        self.login_as(self.user)
+
+        url = reverse('api-v2.1-shared-repo', args=[self.repo_id])
+        data = 'permission=r&share_type=public'
+        resp = self.client.put(url, data, 'application/x-www-form-urlencoded')
+        self.assertEqual(403, resp.status_code)
 
     def test_delete_user_share(self):
         self.share_repo_to_user()

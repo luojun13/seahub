@@ -3,6 +3,9 @@ pytestmark = pytest.mark.django_db
 
 from seahub.test_utils import BaseTestCase
 from seaserv import seafile_api
+from mock import patch
+from seahub.role_permissions.settings import DEFAULT_ENABLED_ROLE_PERMISSIONS
+from tests.api.test_public_repo import TEST_ADD_PUBLIC_ENABLED_ROLE_PERMISSIONS
 
 
 class SharedRepoTest(BaseTestCase):
@@ -28,6 +31,7 @@ class SharedRepoTest(BaseTestCase):
         self.assertEqual(200, resp.status_code)
         assert "success" in resp.content
 
+    @patch('seahub.role_permissions.utils.ENABLED_ROLE_PERMISSIONS', TEST_ADD_PUBLIC_ENABLED_ROLE_PERMISSIONS)
     def test_user_can_share_repo_to_public(self):
         self.login_as(self.user)
 
@@ -35,6 +39,14 @@ class SharedRepoTest(BaseTestCase):
         resp = self.client.put(url)
         self.assertEqual(200, resp.status_code)
         assert "success" in resp.content
+
+    @patch('seahub.role_permissions.utils.ENABLED_ROLE_PERMISSIONS', DEFAULT_ENABLED_ROLE_PERMISSIONS)
+    def test_user_can_not_share_repo_to_public_when_add_public_disabled(self):
+        self.login_as(self.user)
+
+        url = self.shared_repo_url % self.repo.id
+        resp = self.client.put(url)
+        self.assertEqual(403, resp.status_code)
 
     def test_admin_can_set_pub_repo_when_setting_disalbed(self):
         assert bool(self.config.ENABLE_USER_CREATE_ORG_REPO) is True
