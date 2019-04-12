@@ -142,3 +142,18 @@
     max-width: 100%;
   }
 }
+
+/* 新加入 */
+.seafile-md-comment {
+  background-color: #fff;
+  position: absolute;
+  right: 0;
+  height: 100%;
+}
+.seafile-md-comment .seafile-comment {
+  height: 100%;
+  width: 100%;
+}
+.seafile-md-comment .seafile-comment .seafile-comment-toggle-resolved {
+  width: 100%;
+}

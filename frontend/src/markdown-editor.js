@@ -1,4 +1,4 @@
-import React from 'react';
+import React, { Fragment } from 'react';
 // import SeafileEditor from '@seafile/seafile-editor';
 import SeafileEditor from './seafile-editor/src/editor/seafile-editor.js';
 import 'whatwg-fetch';
@@ -493,6 +493,9 @@ class MarkdownEditor extends React.Component {
       //     showMarkdownEditorDialog: true,
       //   });
       //   break;
+      case 'help':
+        window.richMarkdownEditor.showHelpDialog();
+        break;
       case 'share_link':
         this.setState({
           showMarkdownEditorDialog: true,
@@ -679,9 +682,13 @@ class MarkdownEditor extends React.Component {
     window.location.href = editorUtilities.getParentDectionaryUrl();
   }
 
-  onEdit = (event) => {
-    event.preventDefault();
-    this.setEditorMode('rich');
+  onEdit = (mode) => {
+    if (mode === 'rich') {
+      window.seafileEditor.switchToRichTextEditor();
+    } else if (mode === 'plain') {
+      window.seafileEditor.switchToPlainTextEditor();
+    }
+    // this.setEditorMode(mode);
   }
 
   toggleShareLinkDialog = () => {
@@ -734,36 +741,17 @@ class MarkdownEditor extends React.Component {
   }
 
   toggleHistory = () => {
-    if (!isDocs) {
-      window.location.href = siteRoot + 'repo/file_revisions/' + repoID + '/?p=' + Utils.encodePath(filePath);
-      return; 
-    }
-
-    if (this.state.isShowHistory) {
-      this.setState({
-        isShowHistory: false,
-        isShowOutline: true,
-        isShowComments: false,
-      });
-    } else {
-      this.setState({
-        isShowHistory: true,
-        isShowOutline: false,
-        isShowComments: false,
-      });
-    }
+    window.location.href = siteRoot + 'repo/file_revisions/' + repoID + '/?p=' + Utils.encodePath(filePath);
   }
 
   toggleCommentList = () => {
     if (this.state.isShowComments) {
       this.setState({
-        isShowHistory: false,
         isShowOutline: true,
         isShowComments: false,
       });
     } else {
       this.setState({
-        isShowHistory: false,
         isShowOutline: false,
         isShowComments: true,
       });
@@ -874,33 +862,65 @@ class MarkdownEditor extends React.Component {
           </div>
         );
       } else {
-        component = <SeafileEditor
-          fileInfo={this.state.fileInfo}
-          markdownContent={this.state.markdownContent}
-          editorUtilities={editorUtilities}
-          collabUsers={this.state.collabUsers}
-          setFileInfoMtime={this.setFileInfoMtime}
-          toggleStar={this.toggleStar}
-          showFileHistory={true}
-          setEditorMode={this.setEditorMode}
-          setContent={this.setContent}
-          draftID={draftID}
-          isDraft={isDraft}
-          mode={this.state.mode}
-          emitSwitchEditor={this.emitSwitchEditor}
-          hasDraft={hasDraft}
-          editorMode={this.state.editorMode}
-          relatedFiles={this.state.relatedFiles}
-          siteRoot={siteRoot}
-          autoSaveDraft={this.autoSaveDraft}
-          setDraftValue={this.setDraftValue}
-          clearTimer={this.clearTimer}
-          openDialogs={this.openDialogs}
-          fileTagList={this.state.fileTagList}
-          deleteDraft={this.deleteDraft}
-          showDraftSaved={this.state.showDraftSaved}
-          readOnly={this.state.readOnly}
-        />;
+        component = (
+          <Fragment>
+            <MarkdownViewerToolbar
+              isDocs={isDocs}
+              hasDraft={hasDraft}
+              isDraft={isDraft}
+              editorUtilities={editorUtilities}
+              collabUsers={this.state.collabUsers}
+              fileInfo={this.state.fileInfo}
+              toggleStar={this.toggleStar}
+              backToParentDirectory={this.backToParentDirectory}
+              openDialogs={this.openDialogs}
+              fileTagList={this.state.fileTagList}
+              relatedFiles={this.state.relatedFiles}
+              toggleShareLinkDialog={this.toggleShareLinkDialog}
+              onEdit={this.onEdit}
+              toggleNewDraft={editorUtilities.createDraftFile}
+              commentsNumber={this.state.commentsNumber}
+              toggleCommentList={this.toggleCommentList}
+              showFileHistory={this.state.isShowHistory ? false : true }
+              toggleHistory={this.toggleHistory}
+              readOnly={this.state.readOnly}
+              mode={this.state.mode}
+              editorMode={this.state.editorMode}
+            />
+            <SeafileEditor
+              fileInfo={this.state.fileInfo}
+              markdownContent={this.state.markdownContent}
+              editorUtilities={editorUtilities}
+              collabUsers={this.state.collabUsers}
+              setFileInfoMtime={this.setFileInfoMtime}
+              toggleStar={this.toggleStar}
+              showFileHistory={true}
+              setEditorMode={this.setEditorMode}
+              setContent={this.setContent}
+              draftID={draftID}
+              isDraft={isDraft}
+              mode={this.state.mode}
+              emitSwitchEditor={this.emitSwitchEditor}
+              hasDraft={hasDraft}
+              editorMode={this.state.editorMode}
+              relatedFiles={this.state.relatedFiles}
+              siteRoot={siteRoot}
+              autoSaveDraft={this.autoSaveDraft}
+              setDraftValue={this.setDraftValue}
+              clearTimer={this.clearTimer}
+              openDialogs={this.openDialogs}
+              fileTagList={this.state.fileTagList}
+              deleteDraft={this.deleteDraft}
+              showDraftSaved={this.state.showDraftSaved}
+              readOnly={this.state.readOnly}
+            />
+            {this.state.isShowComments &&
+              <div className="seafile-md-comment">
+                <CommentPanel toggleCommentPanel={this.toggleCommentList} commentsNumber={this.state.commentsNumber}/>
+              </div>
+            }
+          </Fragment>
+        );
       }
 
       return (
@@ -918,30 +938,6 @@ class MarkdownEditor extends React.Component {
           {component}
           {this.state.showMarkdownEditorDialog && (
             <React.Fragment>
-              {/*this.state.showEditFileTagDialog &&
-                <ModalPortal>
-                  <EditFileTagDialog
-                    repoID={repoID}
-                    filePath={filePath}
-                    fileTagList={this.state.fileTagList}
-                    toggleCancel={this.toggleCancel}
-                    onFileTagChanged={this.onFileTagChanged}
-                  />
-                </ModalPortal>
-              */}
-              {/*this.state.showRelatedFileDialog &&
-                <ModalPortal>
-                  <RelatedFileDialogs
-                    repoID={repoID}
-                    filePath={filePath}
-                    relatedFiles={this.state.relatedFiles}
-                    toggleCancel={this.toggleCancel}
-                    onRelatedFileChange={this.onRelatedFileChange}
-                    dirent={this.state.fileInfo}
-                    viewMode={this.state.viewMode}
-                  />
-                </ModalPortal>
-              */}
               {this.state.showInsertFileDialog &&
                 <ModalPortal>
                   <InsertFileDialog
