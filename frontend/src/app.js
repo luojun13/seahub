@@ -23,6 +23,7 @@ import PublicSharedView from './pages/shared-with-all/public-shared-view';
 import LibContentView from './pages/lib-content-view/lib-content-view';
 import Group from './pages/groups/group-view';
 import Groups from './pages/groups/groups-view';
+import InvitationsView from './pages/invitations/invitations-view';
 import Wikis from './pages/wikis/wikis';
 import MainContentWrapper from './components/main-content-wrapper';
 
@@ -219,6 +220,7 @@ class App extends Component {
               />
               <Wikis path={siteRoot + 'wikis'} onShowSidePanel={this.onShowSidePanel} onSearchedClick={this.onSearchedClick}/>
               <PublicSharedView path={siteRoot + 'org/'} onShowSidePanel={this.onShowSidePanel} onSearchedClick={this.onSearchedClick} onTabNavClick={this.tabItemClick}/>
+              <InvitationsView path={siteRoot + 'invitations/'} onShowSidePanel={this.onShowSidePanel} onSearchedClick={this.onSearchedClick} />
             </Router>
           </MainPanel>
         </div>
