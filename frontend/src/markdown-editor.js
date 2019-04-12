@@ -294,8 +294,8 @@ class MarkdownEditor extends React.Component {
       relatedFiles: [],
       fileTagList: [],
       localDraftDialog: false,
-      showRelatedFileDialog: false,
-      showEditFileTagDialog: false,
+      // showRelatedFileDialog: false,
+      // showEditFileTagDialog: false,
       showMarkdownEditorDialog: false,
       showShareLinkDialog: false,
       showCommentDialog: false,
@@ -391,8 +391,8 @@ class MarkdownEditor extends React.Component {
 
   toggleCancel = () => {
     this.setState({
-      showRelatedFileDialog: false,
-      showEditFileTagDialog: false,
+      // showRelatedFileDialog: false,
+      // showEditFileTagDialog: false,
       showMarkdownEditorDialog: false,
       showShareLinkDialog: false,
       showCommentDialog: false,
@@ -471,28 +471,28 @@ class MarkdownEditor extends React.Component {
   openDialogs = (option) => {
     switch(option)
     {
-      case 'related_files':
-        if (this.state.relatedFiles.length > 0) {
-          this.setState({
-            showRelatedFileDialog: true,
-            showMarkdownEditorDialog: true,
-            viewMode: 'list_related_file',
-          });
-        }
-        else {
-          this.setState({
-            showRelatedFileDialog: true,
-            showMarkdownEditorDialog: true,
-            viewMode: 'add_related_file',
-          });
-        }
-        break;
-      case 'tags':
-        this.setState({
-          showEditFileTagDialog: true,
-          showMarkdownEditorDialog: true,
-        });
-        break;
+      // case 'related_files':
+      //   if (this.state.relatedFiles.length > 0) {
+      //     this.setState({
+      //       showRelatedFileDialog: true,
+      //       showMarkdownEditorDialog: true,
+      //       viewMode: 'list_related_file',
+      //     });
+      //   }
+      //   else {
+      //     this.setState({
+      //       showRelatedFileDialog: true,
+      //       showMarkdownEditorDialog: true,
+      //       viewMode: 'add_related_file',
+      //     });
+      //   }
+      //   break;
+      // case 'tags':
+      //   this.setState({
+      //     showEditFileTagDialog: true,
+      //     showMarkdownEditorDialog: true,
+      //   });
+      //   break;
       case 'share_link':
         this.setState({
           showMarkdownEditorDialog: true,
@@ -527,7 +527,6 @@ class MarkdownEditor extends React.Component {
         contact_email: editorUtilities.contact_email,
       },
     });
-    // document.removeEventListener('selectionchange', this.setBtnPosition);
   }
 
   componentDidMount() {
@@ -553,19 +552,12 @@ class MarkdownEditor extends React.Component {
         seafileAPI.getFileContent(downLoadUrl).then((res) => {
           const contentLength = res.data.length;
           let isBlankFile =  (contentLength === 0 || contentLength === 1);
-          let hasPermission = (this.state.fileInfo.permission === 'rw');
           let isEditMode = mode === 'edit' ? true : false;
           let value = deserialize(res.data);
           this.setState({
             markdownContent: res.data,
             loading: false,
-            // Goto rich edit page
-            // First, the user has the relevant permissions, otherwise he can only enter the viewer interface or cannot access
-            // case1: If file is draft file
-            // case2: If mode == 'edit' and the file has no draft
-            // case3: The length of markDownContent is 1 when clear all content in editor and the file has no draft
-            // readOnly: (hasPermission && (isDraft || (isEditMode && !hasDraft) || (isBlankFile && !hasDraft))) ? false : true,
-            // readOnly: hasPermission
+            readOnly: this.state.fileInfo.permission !== 'rw',
             value: value,
           });
         });
@@ -594,7 +586,6 @@ class MarkdownEditor extends React.Component {
     this.listFileTags();
     this.getCommentsNumber();
 
-    // document.addEventListener('selectionchange', this.setBtnPosition);
     setTimeout(() => {
       let url = new URL(window.location.href);
       if (url.hash) {
@@ -731,186 +722,16 @@ class MarkdownEditor extends React.Component {
     });
   }
 
-  // setBtnPosition = (e) => {
-  //   if (!this.state.isShowComments) return;
-  //   const nativeSelection = window.getSelection();
-  //   if (!nativeSelection.rangeCount) {
-  //     this.range = null;
-  //     return;
-  //   }
-  //   if (nativeSelection.isCollapsed === false) {
-  //     const nativeRange = nativeSelection.getRangeAt(0);
-  //     const focusNode = nativeSelection.focusNode;
-  //     if ((focusNode.tagName === 'I') ||
-  //         (focusNode.nodeType !== 3 && focusNode.getAttribute('class') === 'language-type')) {
-  //       // fix select last paragraph
-  //       let fragment = nativeRange.cloneContents();
-  //       let startNode = fragment.firstChild.firstChild;
-  //       if (!startNode) return;
-  //       let newNativeRange = document.createRange();
-  //       newNativeRange.setStartBefore(startNode);
-  //       newNativeRange.setEndAfter(startNode);
-
-  //       let editor = {value: this.state.value};
-  //       this.range = findRange(nativeRange, editor);
-  //     }
-
-  //     else {
-  //       let editor = {value: this.state.value};
-  //       this.range = findRange(nativeRange, editor);
-  //     }
-  //     if (!this.range) return;
-  //     let rect = nativeRange.getBoundingClientRect();
-  //     // fix Safari bug
-  //     if (navigator.userAgent.indexOf('Chrome') < 0 && navigator.userAgent.indexOf('Safari') > 0) {
-  //       if (nativeRange.collapsed && rect.top == 0 && rect.height == 0) {
-  //         if (nativeRange.startOffset == 0) {
-  //           nativeRange.setEnd(nativeRange.endContainer, 1);
-  //         } else {
-  //           nativeRange.setStart(nativeRange.startContainer, nativeRange.startOffset - 1);
-  //         }
-  //         rect = nativeRange.getBoundingClientRect();
-  //         if (rect.top == 0 && rect.height == 0) {
-  //           if (nativeRange.getClientRects().length) {
-  //             rect = nativeRange.getClientRects()[0];
-  //           }
-  //         }
-  //       }
-  //     }
-  //     let style = this.refs.commentbtn.style;
-  //     style.top = `${rect.top - 63 + this.refs.markdownContainer.scrollTop}px`;
-  //     style.right = '0px';
-  //   }
-  //   else {
-  //     let style = this.refs.commentbtn.style;
-  //     style.top = '-1000px';
-  //   }
-  // }
-
   addComment = (e) => {
     e.stopPropagation();
-    // this.getQuote();
     this.openDialogs('comment');
   }
-
-  // getQuote = () => {
-  //   let range = this.range;
-  //   if (!range) return;
-  //   const { document } = this.state.value;
-  //   let { anchor, focus } = range;
-  //   const anchorText = document.getNode(anchor.key);
-  //   const focusText = document.getNode(focus.key);
-  //   const anchorInline = document.getClosestInline(anchor.key);
-  //   const focusInline = document.getClosestInline(focus.key);
-  //   // COMPAT: If the selection is at the end of a non-void inline node, and
-  //   // there is a node after it, put it in the node after instead. This
-  //   // standardizes the behavior, since it's indistinguishable to the user.
-  //   if (anchorInline && anchor.offset == anchorText.text.length) {
-  //     const block = document.getClosestBlock(anchor.key);
-  //     const nextText = block.getNextText(anchor.key);
-  //     if (nextText) {
-  //       range = range.moveAnchorTo(nextText.key, 0);
-  //     }
-  //   }
-  //   if (focusInline && focus.offset == focusText.text.length) {
-  //     const block = document.getClosestBlock(focus.key);
-  //     const nextText = block.getNextText(focus.key);
-  //     if (nextText) {
-  //       range = range.moveFocusTo(nextText.key, 0); 
-  //     }
-  //   }
-  //   let fragment = document.getFragmentAtRange(range);
-  //   let nodes = this.removeNullNode(fragment.nodes);
-  //   let newFragment = Document.create({
-  //     nodes: nodes
-  //   });
-  //   let newValue = Value.create({
-  //     document: newFragment
-  //   });
-  //   this.quote = serialize(newValue.toJSON());
-  //   let selection = document.createSelection(range);
-  //   selection = selection.setIsFocused(true);
-  //   this.setState({
-  //     commentPosition: selection.anchor.path
-  //   });
-  // }
-
-  // removeNullNode = (oldNodes) => {
-  //   let newNodes = [];
-  //   oldNodes.map((node) => {
-  //     const text = node.text.trim();
-  //     const childNodes = node.nodes;
-  //     if (!text) return;
-  //     if ((childNodes && childNodes.size === 1) || (!childNodes)) {
-  //       newNodes.push(node);
-  //     }
-  //     else if (childNodes.size > 1) {
-  //       let nodes = this.removeNullNode(childNodes);
-  //       let newNode = Block.create({
-  //         nodes: nodes,
-  //         data: node.data,
-  //         key: node.key,
-  //         type: node.type
-  //       });
-  //       newNodes.push(newNode);
-  //     }
-  //   });
-  //   return newNodes;
-  // }
 
   scrollToNode = (node) => {
     let url = new URL(window.location.href);
     url.set('hash', 'user-content-' + node.text);
     window.location.href = url.toString();
   }
-
-  // findScrollContainer = (el, window) => {
-  //   let parent = el.parentNode;
-  //   const OVERFLOWS = ['auto', 'overlay', 'scroll'];
-  //   let scroller;
-  //   while (!scroller) {
-  //     if (!parent.parentNode) break;
-  //     const style = window.getComputedStyle(parent);
-  //     const { overflowY } = style;
-  //     if (OVERFLOWS.includes(overflowY)) {
-  //       scroller = parent;
-  //       break;
-  //     }
-  //     parent = parent.parentNode;
-  //   }
-  //   if (!scroller) {
-  //     return window.document.body;
-  //   }
-  //   return scroller;
-  // }
-
-  // scrollToQuote = (path) => {
-  //   if (!path) return;
-  //   const win = window;
-  //   if (path.length > 2) {
-  //     // deal with code block or chart
-  //     path[0] = path[0] > 1 ? path[0] - 1 : path[0] + 1;
-  //     path = path.slice(0, 1);
-  //   }
-  //   let node = this.state.value.document.getNode(path);
-  //   if (!node) {
-  //     path = path.slice(0, 1);
-  //     node = this.state.value.document.getNode(path);
-  //   }
-  //   if (node) {
-  //     let element = win.document.querySelector(`[data-key="${node.key}"]`);
-  //     while (element.tagName === 'CODE') {
-  //       element = element.parentNode;
-  //     }
-  //     const scroller = this.findScrollContainer(element, win);
-  //     const isWindow = scroller == win.document.body || scroller == win.document.documentElement;
-  //     if (isWindow) {
-  //       win.scrollTo(0, element.offsetTop);
-  //     } else {
-  //       scroller.scrollTop = element.offsetTop;
-  //     }
-  //   }
-  // }
 
   toggleHistory = () => {
     if (!isDocs) {
@@ -1097,7 +918,7 @@ class MarkdownEditor extends React.Component {
           {component}
           {this.state.showMarkdownEditorDialog && (
             <React.Fragment>
-              {this.state.showEditFileTagDialog &&
+              {/*this.state.showEditFileTagDialog &&
                 <ModalPortal>
                   <EditFileTagDialog
                     repoID={repoID}
@@ -1107,8 +928,8 @@ class MarkdownEditor extends React.Component {
                     onFileTagChanged={this.onFileTagChanged}
                   />
                 </ModalPortal>
-              }
-              {this.state.showRelatedFileDialog &&
+              */}
+              {/*this.state.showRelatedFileDialog &&
                 <ModalPortal>
                   <RelatedFileDialogs
                     repoID={repoID}
@@ -1120,7 +941,7 @@ class MarkdownEditor extends React.Component {
                     viewMode={this.state.viewMode}
                   />
                 </ModalPortal>
-              }
+              */}
               {this.state.showInsertFileDialog &&
                 <ModalPortal>
                   <InsertFileDialog
