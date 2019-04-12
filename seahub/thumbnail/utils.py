@@ -258,3 +258,8 @@ def extract_xmind_image(repo_id, path, size=XMIND_IMAGE_SIZE):
     local_xmind_image = os.path.join(thumbnail_dir, file_id)
 
     return _create_thumbnail_common(extracted_xmind_image_str, local_xmind_image, size)
+
+def get_xmind_image(obj_id):
+    xmind_dir = os.path.join(THUMBNAIL_ROOT, str(XMIND_IMAGE_SIZE))
+    xmind_image = os.path.join(xmind_dir, obj_id)
+    return xmind_image
